@@ -127,7 +127,7 @@ export function RepoInstaller({ onDone }: { onDone: () => void }) {
             if (np[i] >= 100) clearInterval(step);
             return np;
           });
-        }, 80));
+        }, 80);
         timers.push(step);
       }, startDelay));
     });
