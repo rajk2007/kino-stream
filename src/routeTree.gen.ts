@@ -10,12 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlayerTypeIdRouteImport } from './routes/player.$type.$id'
+import { Route as DetailsTypeIdRouteImport } from './routes/details.$type.$id'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -28,35 +36,76 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayerTypeIdRoute = PlayerTypeIdRouteImport.update({
+  id: '/player/$type/$id',
+  path: '/player/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DetailsTypeIdRoute = DetailsTypeIdRouteImport.update({
+  id: '/details/$type/$id',
+  path: '/details/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/details/$type/$id': typeof DetailsTypeIdRoute
+  '/player/$type/$id': typeof PlayerTypeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/details/$type/$id': typeof DetailsTypeIdRoute
+  '/player/$type/$id': typeof PlayerTypeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/details/$type/$id': typeof DetailsTypeIdRoute
+  '/player/$type/$id': typeof PlayerTypeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/library' | '/search'
+  fullPaths:
+    | '/'
+    | '/library'
+    | '/profile'
+    | '/search'
+    | '/details/$type/$id'
+    | '/player/$type/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/library' | '/search'
-  id: '__root__' | '/' | '/library' | '/search'
+  to:
+    | '/'
+    | '/library'
+    | '/profile'
+    | '/search'
+    | '/details/$type/$id'
+    | '/player/$type/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/library'
+    | '/profile'
+    | '/search'
+    | '/details/$type/$id'
+    | '/player/$type/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LibraryRoute: typeof LibraryRoute
+  ProfileRoute: typeof ProfileRoute
   SearchRoute: typeof SearchRoute
+  DetailsTypeIdRoute: typeof DetailsTypeIdRoute
+  PlayerTypeIdRoute: typeof PlayerTypeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -82,13 +138,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/player/$type/$id': {
+      id: '/player/$type/$id'
+      path: '/player/$type/$id'
+      fullPath: '/player/$type/$id'
+      preLoaderRoute: typeof PlayerTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/details/$type/$id': {
+      id: '/details/$type/$id'
+      path: '/details/$type/$id'
+      fullPath: '/details/$type/$id'
+      preLoaderRoute: typeof DetailsTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LibraryRoute: LibraryRoute,
+  ProfileRoute: ProfileRoute,
   SearchRoute: SearchRoute,
+  DetailsTypeIdRoute: DetailsTypeIdRoute,
+  PlayerTypeIdRoute: PlayerTypeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
