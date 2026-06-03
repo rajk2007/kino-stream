@@ -36,8 +36,21 @@ function Home() {
   const korean = useFetch(() => tmdb<{ results: Media[] }>("/discover/tv", { with_original_language: "ko", sort_by: "popularity.desc" }));
   const japanese = useFetch(() => tmdb<{ results: Media[] }>("/discover/tv", { with_original_language: "ja", sort_by: "popularity.desc" }));
 
-  const heroItems = trending?.results.slice(0, 5) ?? [];
+  const heroSourceMap: Record<Category, Media[] | undefined> = {
+    Trending: trending?.results,
+    Movies: popMovies?.results,
+    Series: popTV?.results,
+    Anime: anime?.results,
+    Hindi: hindi?.results,
+    English: english?.results,
+    Tamil: tamil?.results,
+    Telugu: telugu?.results,
+    Korean: korean?.results,
+    Japanese: japanese?.results,
+  };
+  const heroItems = (heroSourceMap[category] ?? trending?.results ?? []).slice(0, 5);
   const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => { setHeroIdx(0); }, [category]);
   useEffect(() => {
     if (!heroItems.length) return;
     const i = setInterval(() => setHeroIdx((x) => (x + 1) % heroItems.length), 5000);
@@ -60,28 +73,21 @@ function Home() {
     { key: "now", title: "Recommended For You", data: nowPlaying?.results, type: "movie" },
   ], [trending, hindi, popMovies, anime, popTV, topRated, english, tamil, telugu, korean, japanese, nowPlaying]);
 
-  const orderedRows = useMemo(() => {
-    const priorityMap: Record<Category, string[]> = {
+  const visibleRows = useMemo(() => {
+    const filterMap: Record<Category, string[]> = {
       Trending: ["trending"],
-      Movies: ["movies", "toprated"],
+      Movies: ["movies", "toprated", "now"],
       Series: ["series"],
-      Anime: ["anime"],
-      Hindi: ["hindi"],
-      English: ["english"],
+      Anime: ["anime", "japanese"],
+      Hindi: ["hindi", "movies"],
+      English: ["english", "movies", "toprated", "series"],
       Tamil: ["tamil"],
       Telugu: ["telugu"],
       Korean: ["korean"],
-      Japanese: ["japanese"],
+      Japanese: ["japanese", "anime"],
     };
-    const priority = priorityMap[category] ?? [];
-    return [...allRows].sort((a, b) => {
-      const ai = priority.indexOf(a.key);
-      const bi = priority.indexOf(b.key);
-      if (ai === -1 && bi === -1) return 0;
-      if (ai === -1) return 1;
-      if (bi === -1) return -1;
-      return ai - bi;
-    });
+    const keys = filterMap[category] ?? [];
+    return keys.map((k) => allRows.find((r) => r.key === k)).filter(Boolean) as RowDef[];
   }, [allRows, category]);
 
   return (
@@ -152,19 +158,21 @@ function Home() {
         </Row>
       )}
 
-      <AnimatePresence initial={false}>
-        {orderedRows.map((r) => (
-          <motion.div
-            key={r.key}
-            layout
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          >
-            <Row title={r.title}>
-              {r.data?.slice(0, 15).map(m => <PosterCard key={m.id} m={m} type={r.type} />)
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={category}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          {visibleRows.map((r: RowDef) => (
+            <Row key={r.key} title={r.title}>
+              {r.data?.slice(0, 15).map((m: Media) => <PosterCard key={m.id} m={m} type={r.type} />)
                 ?? Array.from({ length: 5 }).map((_, i) => <PosterSkeleton key={i} />)}
             </Row>
-          </motion.div>
-        ))}
+          ))}
+        </motion.div>
       </AnimatePresence>
     </div>
   );
