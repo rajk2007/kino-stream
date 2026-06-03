@@ -158,19 +158,21 @@ function Home() {
         </Row>
       )}
 
-      <AnimatePresence initial={false}>
-        {orderedRows.map((r) => (
-          <motion.div
-            key={r.key}
-            layout
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          >
-            <Row title={r.title}>
-              {r.data?.slice(0, 15).map(m => <PosterCard key={m.id} m={m} type={r.type} />)
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={category}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          {visibleRows.map((r: RowDef) => (
+            <Row key={r.key} title={r.title}>
+              {r.data?.slice(0, 15).map((m: Media) => <PosterCard key={m.id} m={m} type={r.type} />)
                 ?? Array.from({ length: 5 }).map((_, i) => <PosterSkeleton key={i} />)}
             </Row>
-          </motion.div>
-        ))}
+          ))}
+        </motion.div>
       </AnimatePresence>
     </div>
   );
