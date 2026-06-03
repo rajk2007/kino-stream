@@ -73,28 +73,21 @@ function Home() {
     { key: "now", title: "Recommended For You", data: nowPlaying?.results, type: "movie" },
   ], [trending, hindi, popMovies, anime, popTV, topRated, english, tamil, telugu, korean, japanese, nowPlaying]);
 
-  const orderedRows = useMemo(() => {
-    const priorityMap: Record<Category, string[]> = {
+  const visibleRows = useMemo(() => {
+    const filterMap: Record<Category, string[]> = {
       Trending: ["trending"],
-      Movies: ["movies", "toprated"],
+      Movies: ["movies", "toprated", "now"],
       Series: ["series"],
-      Anime: ["anime"],
-      Hindi: ["hindi"],
-      English: ["english"],
+      Anime: ["anime", "japanese"],
+      Hindi: ["hindi", "movies"],
+      English: ["english", "movies", "toprated", "series"],
       Tamil: ["tamil"],
       Telugu: ["telugu"],
       Korean: ["korean"],
-      Japanese: ["japanese"],
+      Japanese: ["japanese", "anime"],
     };
-    const priority = priorityMap[category] ?? [];
-    return [...allRows].sort((a, b) => {
-      const ai = priority.indexOf(a.key);
-      const bi = priority.indexOf(b.key);
-      if (ai === -1 && bi === -1) return 0;
-      if (ai === -1) return 1;
-      if (bi === -1) return -1;
-      return ai - bi;
-    });
+    const keys = filterMap[category] ?? [];
+    return keys.map((k) => allRows.find((r) => r.key === k)).filter(Boolean) as RowDef[];
   }, [allRows, category]);
 
   return (
