@@ -23,7 +23,7 @@ export function Player() {
   const [speed, setSpeed] = useState("1");
   const [overlay, setOverlay] = useState<{ kind: "brightness" | "volume" | "seek"; value: number; delta?: number } | null>(null);
   const [brightness, setBrightness] = useState(0.8);
-  const [volume, setVolume] = useState(0.7);
+  const [volume, setVolume] = useState(0.7); // 0.0 - 2.0 (200% max)
   const [ripple, setRipple] = useState<{ x: number; y: number; dir: "back" | "fwd"; id: number } | null>(null);
 
   const hideTimer = useRef<number | null>(null);
@@ -120,6 +120,7 @@ export function Player() {
       }
     }
     if (dragStart.current.mode === "v") {
+      // Left side = brightness. Swipe UP (dy negative) increases.
       const nb = Math.max(0, Math.min(1, brightness - dy / 300));
       setBrightness(nb);
       showOverlay("brightness", nb);
@@ -129,7 +130,8 @@ export function Player() {
         const nb = Math.max(0, Math.min(1, brightness - dy / 300));
         setBrightness(nb); showOverlay("brightness", nb);
       } else {
-        const nv = Math.max(0, Math.min(1, volume - dy / 300));
+        // Volume 0 - 2.0 (200%). Swipe UP increases.
+        const nv = Math.max(0, Math.min(2, volume - (dy / 300) * 2));
         setVolume(nv); showOverlay("volume", nv);
       }
     } else if (dragStart.current.mode === "seek") {
@@ -197,16 +199,54 @@ export function Player() {
         )}
       </AnimatePresence>
 
-      {/* Gesture overlay */}
+      {/* Gesture overlay — vertical bars for brightness/volume */}
       <AnimatePresence>
-        {overlay && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute top-1/2 -translate-y-1/2 glass-dark rounded-2xl px-5 py-3 pointer-events-none flex items-center gap-3"
-            style={ overlay.kind === "brightness" ? { left: 24 } : overlay.kind === "volume" ? { right: 24 } : { left: "50%", transform: "translate(-50%,-50%)" } }
+        {overlay && overlay.kind === "brightness" && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none flex flex-col items-center gap-2 px-3 py-4 rounded-2xl"
+            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
           >
-            {overlay.kind === "brightness" && <><Sun className="w-5 h-5 text-white" /><div className="w-24 h-1 bg-white/20 rounded-full"><div className="h-full bg-white rounded-full" style={{ width: `${overlay.value * 100}%` }} /></div></>}
-            {overlay.kind === "volume" && <><Volume2 className="w-5 h-5 text-white" /><div className="w-24 h-1 bg-white/20 rounded-full"><div className="h-full bg-white rounded-full" style={{ width: `${overlay.value * 100}%` }} /></div></>}
-            {overlay.kind === "seek" && <span className="font-mono text-white">{(overlay.delta ?? 0) >= 0 ? "→ +" : "← "}{Math.abs(Math.round(overlay.delta ?? 0))}s</span>}
+            <Sun className="w-5 h-5 text-white" />
+            <div className="relative" style={{ width: 4, height: 150, background: "rgba(255,255,255,0.2)", borderRadius: 999 }}>
+              <div
+                className="absolute bottom-0 left-0 right-0 rounded-full"
+                style={{ height: `${overlay.value * 100}%`, background: "#FFFFFF", transition: "height 60ms linear" }}
+              />
+            </div>
+            <span className="font-mono text-xs text-white">{Math.round(overlay.value * 100)}%</span>
+          </motion.div>
+        )}
+        {overlay && overlay.kind === "volume" && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none flex flex-col items-center gap-2 px-3 py-4 rounded-2xl"
+            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
+          >
+            <Volume2 className="w-5 h-5 text-white" />
+            <div className="relative" style={{ width: 4, height: 150, background: "rgba(255,255,255,0.2)", borderRadius: 999 }}>
+              <div
+                className="absolute bottom-0 left-0 right-0 rounded-full"
+                style={{
+                  height: `${(overlay.value / 2) * 100}%`,
+                  background: overlay.value > 1 ? "#FF8C1A" : "var(--kino-red)",
+                  transition: "height 60ms linear",
+                }}
+              />
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="font-mono text-xs text-white">{Math.round(overlay.value * 100)}%</span>
+              {overlay.value > 1 && (
+                <span className="font-mono text-[9px] text-[#FF8C1A] font-bold tracking-wider mt-0.5">BOOST</span>
+              )}
+            </div>
+          </motion.div>
+        )}
+        {overlay && overlay.kind === "seek" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 glass-dark rounded-2xl px-5 py-3 pointer-events-none"
+          >
+            <span className="font-mono text-white">{(overlay.delta ?? 0) >= 0 ? "→ +" : "← "}{Math.abs(Math.round(overlay.delta ?? 0))}s</span>
           </motion.div>
         )}
       </AnimatePresence>
