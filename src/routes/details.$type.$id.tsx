@@ -23,9 +23,15 @@ function Details() {
   const [episodes, setEpisodes] = useState<any[]>([]);
 
   useEffect(() => {
-    tmdb(`/${apiType}/${id}`, { append_to_response: "credits,similar,videos" }).then((d: any) => {
+    tmdb(`/${apiType}/${id}`, { append_to_response: "credits,similar,videos,release_dates,content_ratings" }).then((d: any) => {
       setData(d);
-      if (d.adult) setShowAdult(true);
+      const isAdult = d.adult === true;
+      const cert =
+        d.release_dates?.results?.find((r: any) => r.iso_3166_1 === "US")?.release_dates?.[0]?.certification ||
+        d.content_ratings?.results?.find((r: any) => r.iso_3166_1 === "US")?.rating ||
+        "";
+      const showWarning = isAdult || cert === "NC-17" || cert === "X" || cert === "A";
+      if (showWarning) setShowAdult(true);
       if (apiType === "tv" && d.seasons?.length) {
         const firstSeason = d.seasons.find((s: any) => s.season_number > 0) ?? d.seasons[0];
         setSeason(firstSeason.season_number);

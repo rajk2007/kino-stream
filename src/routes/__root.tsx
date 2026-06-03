@@ -7,6 +7,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -78,7 +79,9 @@ function AppShell() {
     <div className="min-h-screen bg-[#080808] mx-auto max-w-[430px] relative">
       <Outlet />
       {!isPlayer && <BottomNav />}
-      {mounted && !splashDone && <SplashScreen onDone={() => setSplashDone(true)} quick={launched} />}
+      <AnimatePresence>
+        {mounted && !splashDone && <SplashScreen key="splash" onDone={() => setSplashDone(true)} quick={launched} />}
+      </AnimatePresence>
       {mounted && splashDone && !installerDone && (
         <RepoInstaller onDone={() => { setLaunched(true); setInstallerDone(true); }} />
       )}
