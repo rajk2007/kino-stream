@@ -36,8 +36,21 @@ function Home() {
   const korean = useFetch(() => tmdb<{ results: Media[] }>("/discover/tv", { with_original_language: "ko", sort_by: "popularity.desc" }));
   const japanese = useFetch(() => tmdb<{ results: Media[] }>("/discover/tv", { with_original_language: "ja", sort_by: "popularity.desc" }));
 
-  const heroItems = trending?.results.slice(0, 5) ?? [];
+  const heroSourceMap: Record<Category, Media[] | undefined> = {
+    Trending: trending?.results,
+    Movies: popMovies?.results,
+    Series: popTV?.results,
+    Anime: anime?.results,
+    Hindi: hindi?.results,
+    English: english?.results,
+    Tamil: tamil?.results,
+    Telugu: telugu?.results,
+    Korean: korean?.results,
+    Japanese: japanese?.results,
+  };
+  const heroItems = (heroSourceMap[category] ?? trending?.results ?? []).slice(0, 5);
   const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => { setHeroIdx(0); }, [category]);
   useEffect(() => {
     if (!heroItems.length) return;
     const i = setInterval(() => setHeroIdx((x) => (x + 1) % heroItems.length), 5000);
