@@ -19,9 +19,7 @@ jobs:
       - name: Build web app
         run: |
           npm run build
-          echo "Build complete, checking dist folder:"
-          ls -la dist/
-          ls -la dist/index.html
+          ls dist/index.html && echo "index.html found" || exit 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
